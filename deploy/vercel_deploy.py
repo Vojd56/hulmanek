@@ -22,7 +22,7 @@ def main():
             {"src": "/(api|media)/(.*)", "dest": f"{BACKEND}/$1/$2", "transforms": proxy},
         ],
     }
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:  # npx na Windows drží složku
         site = Path(tmp) / "hulmanek"
         shutil.copytree(ROOT / "static", site)
         if (ROOT / ".vercel").exists():  # propojení s existujícím projektem hulmanek
