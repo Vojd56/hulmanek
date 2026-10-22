@@ -67,6 +67,7 @@ a { color: inherit; }
 .disclaimer {
   max-width: 720px; margin: 0 auto; padding: 8px 16px 0;
   font-size: 12px; color: var(--muted);
+  text-align: center;
 }
 
 main { max-width: 720px; margin: 0 auto; padding: 16px; }
