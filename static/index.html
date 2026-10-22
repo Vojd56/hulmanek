@@ -4,35 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Hulmánek – kdo je kdo</title>
-  <meta name="theme-color" content="#009241">
+  <meta name="theme-color" content="#f3f1ec">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Hulmánek">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dosis:wght@300;400;600;700;800&display=swap">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header class="topbar">
-    <img src="icon.svg" alt="" width="36" height="36">
+    <img class="logo" src="logo.png" alt="" width="36" height="36">
     <div>
       <h1 id="title">Hulmánek</h1>
       <span class="sub">kdo je kdo ve výběhu hulmanů</span>
     </div>
   </header>
+  <nav class="tabbar">
+    <a href="#/" data-tab="identify"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="3"/></svg>Rozpoznat</a>
+    <a href="#/hulmani" data-tab="hulmani"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Hulmani</a>
+    <a href="#/historie" data-tab="historie"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Historie</a>
+    <a href="#/stav" data-tab="stav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Stav</a>
+  </nav>
   <p class="disclaimer">Neoficiální studentský projekt. Nejde o produkt ani službu Zoo Ostrava.</p>
   <main id="view" aria-live="polite"></main>
-  <nav class="tabbar">
-    <a href="#/" data-tab="identify"><span class="ico">◎</span>Rozpoznat</a>
-    <a href="#/hulmani" data-tab="hulmani"><span class="ico">☷</span>Hulmani</a>
-    <a href="#/historie" data-tab="historie"><span class="ico">↺</span>Historie</a>
-    <a href="#/stav" data-tab="stav"><span class="ico">⚙</span>Stav</a>
-  </nav>
   <div id="toast" role="status"></div>
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

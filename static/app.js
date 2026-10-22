@@ -80,6 +80,17 @@ async function individuals(force = false) {
   return individualsCache;
 }
 
+const ICONS = {
+  camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
+  check: '<path d="m5 12 5 5 9-10"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  back: '<path d="M15 6l-6 6 6 6"/>',
+  upload: '<path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v5h16v-5"/>',
+  portrait: '<circle cx="12" cy="9" r="4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/>',
+};
+const icon = (name) => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+
 const KIND_LABEL = { face: "obličej", body: "tělo" };
 
 /** Spodní nabídka akcí; vrátí klíč zvolené akce. */
@@ -131,12 +142,13 @@ async function identifyView() {
     : "";
   view.innerHTML = `
     ${emptyHint}
-    <div class="card stack">
+    <div class="card stack intro">
+      <img class="hero" src="hero.jpg" alt="Ilustrace hulmana posvátného" width="640" height="799">
       <h2>Kdo je to?</h2>
       <p class="muted">Vyfoťte nebo natočte hulmana. Video z více úhlů dává spolehlivější výsledek než jedna fotka.</p>
-      <label class="btn primary big" for="cam">📷 Vyfotit nebo natočit</label>
+      <label class="btn primary big" for="cam">${icon("camera")} Vyfotit nebo natočit</label>
       <input class="hidden-input" id="cam" type="file" accept="image/*,video/*" capture="environment">
-      <label class="btn big" for="pick">🖼️ Vybrat z galerie</label>
+      <label class="btn big" for="pick">${icon("image")} Vybrat z galerie</label>
       <input class="hidden-input" id="pick" type="file" accept="image/*,video/*">
     </div>
     <div id="result">${lastResult ? "" : ""}</div>`;
@@ -195,11 +207,11 @@ function confirmControls(key, topCand, list) {
   const options = list.map((i) => `<option value="${i.id}">${esc(i.name)}</option>`).join("");
   return `
     <div class="stack" data-confirm="${key}">
-      ${topCand ? `<button class="btn ok" data-yes="${topCand.individual_id}">✓ Ano, je to ${esc(topCand.name)}</button>` : ""}
+      ${topCand ? `<button class="btn ok" data-yes="${topCand.individual_id}">${icon("check")} Ano, je to ${esc(topCand.name)}</button>` : ""}
       <select data-other>
         <option value="">${topCand ? "Ne, je to…" : "Je to…"}</option>
         ${options}
-        <option value="__new">➕ Nový hulman…</option>
+        <option value="__new">Nový hulman…</option>
       </select>
       <label class="check"><input type="checkbox" data-learn checked> Uložit do galerie (zlepší příští rozpoznání)</label>
     </div>`;
@@ -265,7 +277,7 @@ async function confirmAs(res, animalIndex, individualId, learn, el) {
     const r = await api(`/api/identifications/${res.id}/confirm`, json("POST", { individual_id: individualId, animal_index: animalIndex, learn, crop_kinds: cropKinds }));
     el.closest(".card")?.querySelectorAll("[data-crop-kind]").forEach((b) => (b.disabled = true));
     const name = (await individuals(true)).find((i) => i.id === individualId)?.name ?? "";
-    el.innerHTML = `<p class="verdict match small">✓ Uloženo jako ${esc(name)}${learn ? ` · přidáno ${r.added} výřezů do galerie` : ""}</p>`;
+    el.innerHTML = `<p class="verdict match small">${icon("check")} Uloženo jako ${esc(name)}${learn ? ` · přidáno ${r.added} výřezů do galerie` : ""}</p>`;
   } catch (e) { toast(e.message); }
 }
 
@@ -275,15 +287,15 @@ const MIN_SAMPLES = 20;
 async function individualsView() {
   const list = await individuals(true);
   view.innerHTML = `
-    <div class="btn-row" style="margin-bottom:14px">
-      <h2 style="flex:1">Hulmani (${list.length})</h2>
-      <button class="btn primary" id="add">➕ Přidat</button>
+    <div class="page-head">
+      <h2>Hulmani <span class="muted">${list.length}</span></h2>
+      <button class="btn primary" id="add">${icon("plus")} Přidat</button>
     </div>
     <div id="addForm"></div>
     ${list.length ? "" : `<div class="card"><p>Zatím tu nikdo není. Přidejte prvního hulmana a nahrajte k němu fotky nebo krátká videa z různých stran.</p></div>`}
     <div class="grid">${list.map((i) => `
       <a class="tile" href="#/hulman/${i.id}">
-        <div class="cover" style="${i.cover_url ? `background-image:url('${i.cover_url}')` : ""}">${i.cover_url ? "" : "?"}</div>
+        <div class="cover" style="${i.cover_url ? `background-image:url('${i.cover_url}')` : ""}">${i.cover_url ? "" : icon("portrait")}</div>
         <div class="meta"><b>${esc(i.name)}</b>
           <span class="badge ${i.samples < MIN_SAMPLES ? "warn" : "ok"}">${i.face_samples || 0} obl. · ${i.body_samples || 0} těl</span>
         </div>
@@ -329,15 +341,15 @@ async function individualView(id) {
   const faces = i.samples.filter((s) => s.kind === "face").length;
   const bodies = i.samples.length - faces;
   view.innerHTML = `
-    <p><a href="#/hulmani">← Hulmani</a></p>
+    <p><a class="back" href="#/hulmani">${icon("back")} Hulmani</a></p>
     <h2>${esc(i.name)}</h2>
     <p class="muted">${[i.sex === "M" ? "samec" : i.sex === "F" ? "samice" : "", i.birth_year ? `nar. ${i.birth_year}` : "", i.notes].filter(Boolean).map(esc).join(" · ")}</p>
     <div class="card stack">
       <h3>Přidat fotky nebo videa</h3>
       <p class="muted small">Ideálně stovky záběrů: obličej zepředu, oba boky, záda, různé světlo. Z videa se bere jeden snímek za sekundu. Na záběru má být jen tento hulman (jinak se vezme největší).</p>
-      <label class="btn primary" for="enroll">📁 Vybrat soubory</label>
+      <label class="btn primary" for="enroll">${icon("upload")} Vybrat soubory</label>
       <input class="hidden-input" id="enroll" type="file" accept="image/*,video/*" multiple>
-      <label class="btn" for="enrollCam">📷 Natočit teď</label>
+      <label class="btn" for="enrollCam">${icon("camera")} Natočit teď</label>
       <input class="hidden-input" id="enrollCam" type="file" accept="image/*,video/*" capture="environment">
       <div id="enrollStatus"></div>
     </div>
@@ -346,7 +358,7 @@ async function individualView(id) {
       ${i.samples.length < MIN_SAMPLES ? `<p class="badge warn">Pro spolehlivé rozpoznání přidejte aspoň ${MIN_SAMPLES} záběrů.</p>` : ""}
       <p class="muted small">Klepnutím na výřez ho můžete přepnout mezi obličejem a tělem, nebo smazat (např. když je na něm jiný hulman).</p>
       <div class="samples">${i.samples.map((s) => `
-        <button data-sample="${s.id}"><img loading="lazy" src="${s.url}" alt=""><span class="k">${KIND_LABEL[s.kind]}${s.origin === "confirmed" ? " ✓" : ""}</span></button>`).join("")}</div>
+        <button data-sample="${s.id}"><img loading="lazy" src="${s.url}" alt=""><span class="k">${KIND_LABEL[s.kind]}${s.origin === "confirmed" ? " · potvrzeno" : ""}</span></button>`).join("")}</div>
     </div>
     <div id="editForm">${individualForm(i, "Upravit údaje")}</div>
     <button class="btn danger" id="del">Smazat hulmana i s fotkami</button>`;
