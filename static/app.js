@@ -7,12 +7,16 @@ const pct = (x) => `${Math.round(Math.max(0, x) * 100)} %`;
 function storageGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
 function storageSet(key, value) { try { localStorage.setItem(key, value); } catch { /* soukromý režim */ } }
 
-// PIN i jako cookie, aby se načetly fotky (<img> neposílá hlavičku x-pin)
-function pinCookie(pin) {
+// PIN platí jen do zavření aplikace (sessionStorage), pak se zeptá znovu.
+// Posílá se i jako cookie, aby se načetly fotky (<img> neposílá hlavičku x-pin).
+function pinGet() { try { return sessionStorage.getItem("pin"); } catch { return null; } }
+function pinSet(pin) {
+  try { pin ? sessionStorage.setItem("pin", pin) : sessionStorage.removeItem("pin"); } catch { /* soukromý režim */ }
   const secure = location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `pin=${encodeURIComponent(pin || "")}; path=/; max-age=31536000; SameSite=Strict${secure}`;
+  document.cookie = `pin=${encodeURIComponent(pin || "")}; path=/; SameSite=Strict${secure}${pin ? "" : "; max-age=0"}`;
 }
-pinCookie(storageGet("pin"));
+try { localStorage.removeItem("pin"); } catch { /* dřívější verze si PIN pamatovala natrvalo */ }
+pinSet(pinGet());
 
 function toast(msg, ms = 2600) {
   const el = document.getElementById("toast");
@@ -24,7 +28,7 @@ function toast(msg, ms = 2600) {
 
 // ---------- API ----------
 function headers(extra = {}) {
-  const pin = storageGet("pin");
+  const pin = pinGet();
   return pin ? { ...extra, "x-pin": pin } : extra;
 }
 
@@ -62,13 +66,12 @@ function askPin() {
     view.innerHTML = `
       <div class="card stack">
         <h2>Zadejte PIN</h2>
-        <p class="muted">Aplikace je chráněná PINem, který je nastavený na počítači.</p>
+        <p class="muted">Aplikace je chráněná PINem. Po zavření aplikace se na něj zeptá znovu.</p>
         <input type="password" id="pin" inputmode="numeric" autocomplete="current-password">
         <button class="btn primary big" id="pinOk">Pokračovat</button>
       </div>`;
     document.getElementById("pinOk").onclick = () => {
-      storageSet("pin", document.getElementById("pin").value.trim());
-      pinCookie(storageGet("pin"));
+      pinSet(document.getElementById("pin").value.trim());
       resolve();
     };
   });
@@ -87,6 +90,7 @@ const ICONS = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   back: '<path d="M15 6l-6 6 6 6"/>',
   upload: '<path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v5h16v-5"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   portrait: '<circle cx="12" cy="9" r="4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/>',
 };
 const icon = (name) => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
@@ -142,8 +146,7 @@ async function identifyView() {
     : "";
   view.innerHTML = `
     ${emptyHint}
-    <div class="card stack intro">
-      <img class="hero" src="hero.jpg" alt="Ilustrace hulmana posvátného" width="640" height="799">
+    <div class="card stack">
       <h2>Kdo je to?</h2>
       <p class="muted">Vyfoťte nebo natočte hulmana. Video z více úhlů dává spolehlivější výsledek než jedna fotka.</p>
       <label class="btn primary big" for="cam">${icon("camera")} Vyfotit nebo natočit</label>
@@ -438,7 +441,10 @@ async function statusView() {
   const s = await api("/api/status", { headers: {} });
   if (s.pin_required && !s.pin_ok) { await askPin(); return statusView(); }
   view.innerHTML = `
-    <h2>Stav a přesnost</h2>
+    <div class="page-head">
+      <h2>Stav a přesnost</h2>
+      ${s.pin_required ? `<button class="btn" id="lock">${icon("lock")} Zamknout</button>` : ""}
+    </div>
     <div class="card">
       <dl class="kv">
         <dt>Počítá</dt><dd>${esc(s.device)}</dd>
@@ -481,6 +487,7 @@ async function statusView() {
         <li>Až bude mít každý hulman aspoň ~100 záběrů, spusťte doladění modelu.</li>
       </ul>
     </div>`;
+  document.getElementById("lock")?.addEventListener("click", () => { pinSet(""); individualsCache = null; location.hash = "#/"; });
   const thr = document.getElementById("thr");
   thr.oninput = () => (document.getElementById("thrVal").textContent = pct(thr.value));
   thr.onchange = async () => { await api("/api/settings", json("POST", { threshold: Number(thr.value) })); toast("Práh uložen"); };

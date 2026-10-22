@@ -3,8 +3,8 @@
   "short_name": "Hulmánek",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f3f1ec",
-  "theme_color": "#f3f1ec",
+  "background_color": "#ddd5c6",
+  "theme_color": "#ddd5c6",
   "lang": "cs",
   "icons": [
     {"src": "icon-180.png", "sizes": "180x180", "type": "image/png"},

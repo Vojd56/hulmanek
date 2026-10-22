@@ -1,13 +1,14 @@
-/* Barvy hulmana posvátného: krémová a stříbřitě šedá srst, černý obličej, jantarové oči. */
+/* Barvy hulmana posvátného: béžovo-šedá srst, černý obličej, jantarové oči. Na pozadí listy monstery. */
 :root {
-  --bg: #f3f1ec;
-  --surface: #fbfaf7;
-  --surface-2: #e9e6df;
-  --text: #1c1b19;
-  --muted: #6f6b63;
-  --border: #dcd8cf;
-  --primary: #1c1b19;
-  --primary-text: #fbfaf7;
+  --bg: #ddd5c6;
+  --surface: #f2eee6;
+  --surface-2: #e3dccf;
+  --text: #1f1d1a;
+  --muted: #6b6457;
+  --border: #c9c0ae;
+  --primary: #1f1d1a;
+  --primary-text: #f2eee6;
+  --leaves: url("monstera-light.svg");
   --accent: #b7832f;
   --ok: #3f6b4a;
   --warn: #a8701c;
@@ -18,14 +19,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141413;
-    --surface: #1c1c1a;
-    --surface-2: #272724;
-    --text: #ecebe6;
-    --muted: #9c988f;
-    --border: #33322e;
-    --primary: #ecebe6;
-    --primary-text: #141413;
+    --bg: #191714;
+    --surface: #221f1b;
+    --surface-2: #2d2924;
+    --text: #ebe5d9;
+    --muted: #a49b8a;
+    --border: #3a352e;
+    --primary: #ebe5d9;
+    --primary-text: #191714;
+    --leaves: url("monstera-dark.svg");
     --accent: #d6a24c;
     --ok: #7fae88;
     --warn: #d6a24c;
@@ -39,8 +41,9 @@
 body {
   margin: 0;
   font: 16px/1.5 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
+  background: var(--leaves) 0 0 / 720px repeat fixed, var(--bg);
   color: var(--text);
+  min-height: 100vh;
   padding-bottom: calc(68px + env(safe-area-inset-bottom));
   -webkit-font-smoothing: antialiased;
 }
@@ -231,12 +234,6 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .sheet-backdrop { align-items: center; }
   .sheet { border-radius: 12px; }
 }
-
-/* úvodní ilustrace na obrazovce Rozpoznat */
-.intro { overflow: hidden; }
-.intro .hero { display: block; width: calc(100% + 32px); height: 220px; margin: -16px -16px 4px;
-  object-fit: cover; object-position: 60% 22%; background: #d9d8d5; }
-@media (min-width: 760px) { .intro .hero { height: 280px; } }
 
 .page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .page-head h2 { margin: 0; }
