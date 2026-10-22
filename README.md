@@ -1,8 +1,7 @@
 # Hulmánek: kdo je kdo ve výběhu hulmanů
 
-> **Neoficiální studentský projekt.** Vznikl pro potřeby chovatelů hulmanů v Zoo Ostrava,
-> ale není oficiálním produktem, službou ani stránkou Zoo Ostrava a zoo za něj neodpovídá.
-> Vzhled je inspirovaný webem zoo, loga a ochranné známky zoo se nepoužívají.
+> **Neoficiální studentský projekt.** Vznikl pro potřeby chovatelů hulmanů v ZOO,
+> ale není oficiálním produktem, službou ani stránkou ZOO a ZOO za něj neodpovídá.
 
 Vyfotíte nebo natočíte hulmana telefonem a aplikace řekne, jak se jmenuje.
 Pozná ho podle obličeje i podle celého těla (bok, záda) a u videa hlasuje přes víc snímků.
@@ -55,15 +54,16 @@ do `start_windows.bat` odkomentujte řádek `set HULMANY_PIN=1234`.
 Nainstalujte [Tailscale](https://tailscale.com/) na počítač i telefon (zdarma pro osobní použití).
 Telefon pak na aplikaci dosáhne odkudkoli přes šifrované spojení, bez otevírání portů do internetu.
 
-### Na internetu zdarma (Hugging Face Spaces + Vercel)
-Aplikace může běžet i bez PC na bezplatném Hugging Face Space (jen procesor, menší model
-MegaDescriptor B-224, fotka trvá několik sekund). Galerie se každé 2 minuty zálohuje do soukromého
-datasetu, protože disk Space se při restartu maže. Web na Vercelu je jen rozhraní, které volání
-`/api` a `/media` přeposílá na Space (viz `vercel.json`).
+### Na internetu (Modal + Vercel)
+Aplikace běží i bez PC na [Modal.com](https://modal.com) (zdarma s měsíčním kreditem, jen procesor,
+menší model MegaDescriptor B-224). Galerie leží na trvalém disku Modal Volume. Web na Vercelu
+(hulmanek.vercel.app) je jediná veřejná adresa: rozhraní a požadavky na `/api` a `/media` přeposílá
+na Modal i s tajným klíčem, bez kterého Modal nic nevydá.
 
-1. Přihlášení: `.venv\Scripts\hf auth login` (token typu Write).
-2. `python deploy/hf_deploy.py --upload-data` založí Space i dataset a nahraje galerii z PC.
-   PIN pro web se uloží do `data/pin-hf.txt`.
+1. Přihlášení: `.venv\Scripts\modal setup` a `npx vercel login`.
+2. `python deploy/modal_deploy.py --upload-data` nasadí aplikaci a nahraje galerii z PC.
+   PIN se uloží do `data/pin-web.txt`, tajný klíč do `data/proxy-key.txt`.
+3. `python deploy/vercel_deploy.py` nasadí web na Vercel.
 
 ## Postup naplnění dat
 

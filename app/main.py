@@ -1,4 +1,5 @@
 """Webový server: API + mobilní rozhraní. Spuštění: python -m app.main"""
+import hmac
 import json
 import logging
 import shutil
@@ -12,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
-from . import db, hfsync, media
+from . import db, media
 from .config import ROOT, settings
 from .device import device_description
 from .embedder import finetuned_path
@@ -47,12 +48,10 @@ def load_saved_settings():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await run_in_threadpool(hfsync.restore)
     settings.media_dir.mkdir(parents=True, exist_ok=True)
     load_saved_settings()
     db.connect()
     await run_in_threadpool(get_service)
-    hfsync.start()
     yield
 
 
@@ -67,6 +66,13 @@ def pin_ok(request: Request) -> bool:
 def check_pin(request: Request):
     if not pin_ok(request):
         raise HTTPException(401, "Špatný nebo chybějící PIN.")
+
+
+@app.middleware("http")
+async def require_proxy(request: Request, call_next):
+    if settings.proxy_key and not hmac.compare_digest(request.headers.get("x-proxy-key", ""), settings.proxy_key):
+        return JSONResponse({"detail": "Aplikace je dostupná jen přes svou hlavní adresu."}, status_code=403)
+    return await call_next(request)
 
 
 @app.middleware("http")

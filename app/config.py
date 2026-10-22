@@ -47,8 +47,9 @@ class Settings:
     # Volitelný PIN pro přístup z telefonu (prázdný = bez PINu)
     pin: str = field(default_factory=lambda: _env("PIN", ""))
 
-    # Záloha galerie do soukromého datasetu na Hugging Face (jen pro běh na HF Spaces), viz hfsync.py
-    hf_dataset: str = field(default_factory=lambda: _env("HF_DATASET", ""))
+    # Tajný klíč, který posílá web na Vercelu (hlavička x-proxy-key). Když je nastavený,
+    # server odmítne všechny požadavky bez něj, takže přímá adresa Modalu nejde použít.
+    proxy_key: str = field(default_factory=lambda: _env("PROXY_KEY", ""))
 
     @property
     def db_path(self) -> Path:
