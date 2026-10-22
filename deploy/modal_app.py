@@ -1,15 +1,17 @@
-"""Běh na Modal.com (GPU T4, uspává se, když se nepoužívá). Nasazení: python deploy/modal_deploy.py
+"""Běh na Modal.com (procesor, volitelně GPU; uspává se, když se nepoužívá). Nasazení: python deploy/modal_deploy.py
 
 Galerie (databáze a fotky) leží na trvalém disku Modal Volume "hulmanek-data".
 PIN je v Modal Secret "hulmanek" (HULMANY_PIN).
 """
+import os
 from pathlib import Path
 
 import modal
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKDIR = "/root/hulmanek"
-GPU = "T4"  # None = jen procesor (levnější, pomalejší, menší model)
+# GPU vyžaduje platební kartu v účtu Modal; bez ní jen procesor (menší model). Např. HULMANEK_GPU=T4
+GPU = os.environ.get("HULMANEK_GPU") or None
 
 env = {"HULMANY_DATA_DIR": "/data", "HULMANY_MODELS_DIR": "/data/models", "PYTHONUNBUFFERED": "1"}
 if GPU:
@@ -35,7 +37,7 @@ volume = modal.Volume.from_name("hulmanek-data", create_if_missing=True)
 app = modal.App("hulmanek")
 
 
-@app.function(image=image, gpu=GPU, volumes={"/data": volume}, secrets=[modal.Secret.from_name("hulmanek")],
+@app.function(image=image, gpu=GPU, cpu=2.0, memory=6144, volumes={"/data": volume}, secrets=[modal.Secret.from_name("hulmanek")],
               scaledown_window=300, timeout=600, max_containers=1)
 @modal.concurrent(max_inputs=8)
 @modal.asgi_app()
