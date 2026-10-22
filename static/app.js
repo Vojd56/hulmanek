@@ -7,6 +7,13 @@ const pct = (x) => `${Math.round(Math.max(0, x) * 100)} %`;
 function storageGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
 function storageSet(key, value) { try { localStorage.setItem(key, value); } catch { /* soukromý režim */ } }
 
+// PIN i jako cookie, aby se načetly fotky (<img> neposílá hlavičku x-pin)
+function pinCookie(pin) {
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `pin=${encodeURIComponent(pin || "")}; path=/; max-age=31536000; SameSite=Strict${secure}`;
+}
+pinCookie(storageGet("pin"));
+
 function toast(msg, ms = 2600) {
   const el = document.getElementById("toast");
   el.textContent = msg;
@@ -61,6 +68,7 @@ function askPin() {
       </div>`;
     document.getElementById("pinOk").onclick = () => {
       storageSet("pin", document.getElementById("pin").value.trim());
+      pinCookie(storageGet("pin"));
       resolve();
     };
   });

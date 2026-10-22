@@ -55,6 +55,16 @@ do `start_windows.bat` odkomentujte řádek `set HULMANY_PIN=1234`.
 Nainstalujte [Tailscale](https://tailscale.com/) na počítač i telefon (zdarma pro osobní použití).
 Telefon pak na aplikaci dosáhne odkudkoli přes šifrované spojení, bez otevírání portů do internetu.
 
+### Na internetu zdarma (Hugging Face Spaces + Vercel)
+Aplikace může běžet i bez PC na bezplatném Hugging Face Space (jen procesor, menší model
+MegaDescriptor B-224, fotka trvá několik sekund). Galerie se každé 2 minuty zálohuje do soukromého
+datasetu, protože disk Space se při restartu maže. Web na Vercelu je jen rozhraní, které volání
+`/api` a `/media` přeposílá na Space (viz `vercel.json`).
+
+1. Přihlášení: `.venv\Scripts\hf auth login` (token typu Write).
+2. `python deploy/hf_deploy.py --upload-data` založí Space i dataset a nahraje galerii z PC.
+   PIN pro web se uloží do `data/pin-hf.txt`.
+
 ## Postup naplnění dat
 
 1. V záložce **Hulmani** přidejte jména všech hulmanů.

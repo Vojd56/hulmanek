@@ -7,12 +7,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
-from . import db, media
+from . import db, hfsync, media
 from .config import ROOT, settings
 from .device import device_description
 from .embedder import finetuned_path
@@ -47,19 +47,33 @@ def load_saved_settings():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await run_in_threadpool(hfsync.restore)
     settings.media_dir.mkdir(parents=True, exist_ok=True)
     load_saved_settings()
     db.connect()
     await run_in_threadpool(get_service)
+    hfsync.start()
     yield
 
 
 app = FastAPI(title="Hulmánek", lifespan=lifespan)
 
 
+def pin_ok(request: Request) -> bool:
+    # obrázky (<img>) neumí poslat hlavičku, proto se PIN bere i z cookie
+    return not settings.pin or settings.pin in (request.headers.get("x-pin"), request.cookies.get("pin"))
+
+
 def check_pin(request: Request):
-    if settings.pin and request.headers.get("x-pin") != settings.pin:
+    if not pin_ok(request):
         raise HTTPException(401, "Špatný nebo chybějící PIN.")
+
+
+@app.middleware("http")
+async def protect_media(request: Request, call_next):
+    if request.url.path.startswith("/media/") and not pin_ok(request):
+        return JSONResponse({"detail": "Špatný nebo chybějící PIN."}, status_code=401)
+    return await call_next(request)
 
 
 api = Depends(check_pin)
