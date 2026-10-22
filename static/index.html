@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hulmánek – kdo je kdo</title>
+  <meta name="theme-color" content="#009241">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hulmánek">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dosis:wght@300;400;600;700;800&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <img src="icon.svg" alt="" width="36" height="36">
+    <div>
+      <h1 id="title">Hulmánek</h1>
+      <span class="sub">kdo je kdo ve výběhu hulmanů</span>
+    </div>
+  </header>
+  <p class="disclaimer">Neoficiální studentský projekt. Nejde o produkt ani službu Zoo Ostrava.</p>
+  <main id="view" aria-live="polite"></main>
+  <nav class="tabbar">
+    <a href="#/" data-tab="identify"><span class="ico">◎</span>Rozpoznat</a>
+    <a href="#/hulmani" data-tab="hulmani"><span class="ico">☷</span>Hulmani</a>
+    <a href="#/historie" data-tab="historie"><span class="ico">↺</span>Historie</a>
+    <a href="#/stav" data-tab="stav"><span class="ico">⚙</span>Stav</a>
+  </nav>
+  <div id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

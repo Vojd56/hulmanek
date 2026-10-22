@@ -1,0 +1,28 @@
+# prostředí a cache
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.vercel/
+node_modules/
+
+# váhy modelů (stahují se při prvním spuštění)
+weights/
+models/
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# data zoo: databáze a fotky zůstávají jen na PC
+data/
+fotky/
+*.db
+*.sqlite
+
+# tajné údaje a certifikáty
+certs/
+.env
+.env.*
+*.pem
+*.key

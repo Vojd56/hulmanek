@@ -1,0 +1,15 @@
+# Na Windows s RTX 3060 se PyTorch s CUDA instaluje zvlášť (viz install_windows.bat).
+torch>=2.3
+torchvision>=0.18
+timm>=1.0
+huggingface_hub>=0.23
+ultralytics>=8.3
+openai-clip>=1.0
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+opencv-python-headless>=4.9
+pillow>=10
+numpy>=1.26
+pillow-heif>=0.16
+requests>=2.31
