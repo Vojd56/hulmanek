@@ -27,13 +27,34 @@ function toast(msg, ms = 2600) {
 }
 
 // ---------- API ----------
+// Server na Modalu po ~5 min bez provozu usne a probuzení trvá kolem 10 s. Když odpověď nepřichází
+// a server dlouho neodpověděl, ukážeme, že se probouzí (u rozpoznání, které jen dlouho počítá, ne).
+const AWAKE_MS = 4.5 * 60 * 1000;
+const waking = { lastOk: 0, pending: 0, timer: null };
+function trackRequest(promise) {
+  const asleep = Date.now() - waking.lastOk > AWAKE_MS;
+  waking.pending++;
+  if (asleep && !waking.timer) {
+    waking.timer = setTimeout(() => document.getElementById("waking").hidden = false, 1200);
+  }
+  const done = (ok) => {
+    if (ok) waking.lastOk = Date.now();
+    if (--waking.pending <= 0 || ok) {
+      clearTimeout(waking.timer); waking.timer = null;
+      document.getElementById("waking").hidden = true;
+    }
+  };
+  promise.then(() => done(true), () => done(false));
+  return promise;
+}
+
 function headers(extra = {}) {
   const pin = pinGet();
   return pin ? { ...extra, "x-pin": pin } : extra;
 }
 
 async function api(path, opts = {}) {
-  const res = await fetch(path, { ...opts, headers: headers(opts.headers) });
+  const res = await trackRequest(fetch(path, { ...opts, headers: headers(opts.headers) }));
   if (res.status === 401) { await askPin(); return api(path, opts); }
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.detail || `Chyba ${res.status}`);
@@ -44,7 +65,7 @@ const json = (method, data) => ({ method, headers: { "Content-Type": "applicatio
 
 /** Nahrání souborů s průběhem (fetch neumí průběh odesílání). */
 function upload(path, form, onProgress) {
-  return new Promise((resolve, reject) => {
+  return trackRequest(new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", path);
     for (const [k, v] of Object.entries(headers())) xhr.setRequestHeader(k, v);
@@ -58,7 +79,7 @@ function upload(path, form, onProgress) {
     };
     xhr.onerror = () => reject(new Error("Server není dostupný. Je počítač zapnutý a jste na stejné síti?"));
     xhr.send(form);
-  });
+  }));
 }
 
 function askPin() {

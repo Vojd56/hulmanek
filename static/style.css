@@ -250,6 +250,15 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 #toast.show { opacity: 1; }
 
+.waking { display: flex; align-items: center; gap: 10px; max-width: 688px; margin: 8px 16px 0; padding: 10px 14px;
+  border-radius: var(--radius); background: var(--surface-2); color: var(--text); font-size: 14px; }
+.waking[hidden] { display: none; }
+@media (min-width: 720px) { .waking { margin: 8px auto 0; } }
+.spinner { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border);
+  border-top-color: var(--text); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+
 .tips { padding-left: 18px; margin: 0; }
 .tips li { margin-bottom: 4px; }
 

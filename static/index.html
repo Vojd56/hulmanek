@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
   <script>
     // světlý/tmavý režim: uložená volba, jinak podle systému (nastaví se před vykreslením, ať nebliká)
     (function () {
@@ -43,8 +43,9 @@
     <a href="#/stav" data-tab="stav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Stav</a>
   </nav>
   <p class="disclaimer">Neoficiální studentský projekt. Nejde o produkt ani službu ZOO.</p>
+  <div id="waking" class="waking" role="status" hidden><span class="spinner" aria-hidden="true"></span>Probouzím počítač pro výpočet… obvykle to trvá do 15 s.</div>
   <main id="view" aria-live="polite"></main>
   <div id="toast" role="status"></div>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
