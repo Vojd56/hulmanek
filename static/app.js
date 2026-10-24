@@ -524,6 +524,23 @@ async function statusView() {
   };
 }
 
+// přepínač světlý/tmavý režim v záhlaví; bez uložené volby platí nastavení systému
+const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+const isDark = () => (document.documentElement.dataset.theme || (darkQuery.matches ? "dark" : "light")) === "dark";
+function syncTheme() {
+  document.querySelector('meta[name="theme-color"]').content = isDark() ? "#191714" : "#ddd5c6";
+  const btn = document.getElementById("theme-toggle");
+  btn.setAttribute("aria-label", isDark() ? "Přepnout na světlý režim" : "Přepnout na tmavý režim");
+}
+document.getElementById("theme-toggle").addEventListener("click", () => {
+  const next = isDark() ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch (e) {}
+  syncTheme();
+});
+darkQuery.addEventListener("change", syncTheme);
+syncTheme();
+
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }

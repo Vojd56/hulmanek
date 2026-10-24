@@ -17,8 +17,9 @@
   color-scheme: light;
 }
 
+/* tmavý režim: podle systému, dokud si uživatel nevybere tlačítkem v záhlaví */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #191714;
     --surface: #221f1b;
     --surface-2: #2d2924;
@@ -34,6 +35,22 @@
     --danger: #e07a6a;
     color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #191714;
+  --surface: #221f1b;
+  --surface-2: #2d2924;
+  --text: #ebe5d9;
+  --muted: #a49b8a;
+  --border: #3a352e;
+  --primary: #ebe5d9;
+  --primary-text: #191714;
+  --leaves: url("monstera-dark.svg");
+  --accent: #d6a24c;
+  --ok: #7fae88;
+  --warn: #d6a24c;
+  --danger: #e07a6a;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -63,6 +80,20 @@ a { color: inherit; }
 .topbar .logo { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 .topbar h1 { font-size: 18px; margin: 0; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
 .topbar .sub { display: block; font-size: 13px; color: var(--muted); }
+.theme-toggle {
+  margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+}
+.theme-toggle:hover { background: var(--surface-2); }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-toggle .moon { display: none; }
+:root[data-theme="dark"] .theme-toggle .sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .moon { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle .sun { display: none; }
+  :root:not([data-theme="light"]) .theme-toggle .moon { display: block; }
+}
 
 .disclaimer {
   max-width: 720px; margin: 0 auto; padding: 8px 16px 0;
