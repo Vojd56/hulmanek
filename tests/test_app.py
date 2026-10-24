@@ -162,6 +162,35 @@ def test_video_identify_and_enroll(client, tmp_path):
     assert r.status_code == 200
 
 
+def test_web_gets_small_thumbnails(client):
+    iid = add(client, "Bongo")
+    client.post(f"/api/individuals/{iid}/media",
+                files=[("files", ("a.jpg", jpeg(pattern(1, 1, size=(1600, 1200))), "image/jpeg"))])
+    res = client.post("/api/identify",
+                      files={"file": ("q.jpg", jpeg(pattern(1, 2, size=(3000, 2000))), "image/jpeg")}).json()
+    assert res["media_url"].startswith("/media/_t/m/")
+    assert all(c["url"].startswith("/media/_t/s/") for c in res["animals"][0]["crops"])
+
+    r = client.get(res["media_url"])
+    assert r.status_code == 200 and r.headers["content-type"] == "image/jpeg"
+    assert "immutable" in r.headers["cache-control"]
+    assert max(Image.open(io.BytesIO(r.content)).size) == 1280
+    # originál zůstává v plné velikosti (z něj se dál počítají otisky)
+    from app import media
+    assert max(Image.open(media.media_path(res["media_url"].split("/", 4)[4])).size) == 2048
+
+    hist = client.get("/api/identifications").json()[0]["media_url"]
+    assert hist.startswith("/media/_t/s/")
+    assert max(Image.open(io.BytesIO(client.get(hist).content)).size) == 384
+    cover = client.get("/api/individuals").json()[0]["cover_url"]
+    assert cover.startswith("/media/_t/s/") and client.get(cover).status_code == 200
+    sample_url = client.get(f"/api/individuals/{iid}").json()["samples"][0]["url"]
+    assert sample_url.startswith("/media/_t/s/")
+
+    assert client.get("/media/_t/xl/" + hist.split("/", 5)[5]).status_code == 404
+    assert client.get("/media/_t/s/../../hulmany.db").status_code == 404
+
+
 def test_delete(client):
     iid = add(client, "Bongo")
     client.post(f"/api/individuals/{iid}/media", files=[("files", ("a.jpg", jpeg(pattern(1, 1)), "image/jpeg"))])
