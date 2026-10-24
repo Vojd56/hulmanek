@@ -4,6 +4,7 @@ import json
 import logging
 import shutil
 import socket
+import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -22,14 +23,24 @@ log = logging.getLogger("hulmani")
 STATIC = ROOT / "static"
 MAX_UPLOAD = 300 * 1024 * 1024
 state = {}
+_service_lock = threading.Lock()
 
 
 def get_service():
     if "service" not in state:
-        from .service import Service
+        with _service_lock:  # modely se načítají jen jednou, i když se ptá víc požadavků naráz
+            if "service" not in state:
+                from .service import Service
 
-        state["service"] = Service()
+                state["service"] = Service()
     return state["service"]
+
+
+def _load_service():
+    try:
+        get_service()
+    except Exception:  # noqa: BLE001  zkusí se znovu při prvním rozpoznání
+        log.exception("Načtení modelů selhalo")
 
 
 def settings_file() -> Path:
@@ -51,7 +62,8 @@ async def lifespan(app: FastAPI):
     settings.media_dir.mkdir(parents=True, exist_ok=True)
     load_saved_settings()
     db.connect()
-    await run_in_threadpool(get_service)
+    # modely se načítají na pozadí, galerie a historie se mezitím zobrazí hned
+    threading.Thread(target=_load_service, daemon=True).start()
     yield
 
 
@@ -79,7 +91,11 @@ async def require_proxy(request: Request, call_next):
 async def protect_media(request: Request, call_next):
     if request.url.path.startswith("/media/") and not pin_ok(request):
         return JSONResponse({"detail": "Špatný nebo chybějící PIN."}, status_code=401)
-    return await call_next(request)
+    response = await call_next(request)
+    if request.url.path.startswith("/media/") and response.status_code == 200:
+        # soubory mají jedinečná jména a nemění se, prohlížeč je nemusí znovu stahovat
+        response.headers["Cache-Control"] = "private, max-age=31536000, immutable"
+    return response
 
 
 api = Depends(check_pin)
@@ -105,7 +121,7 @@ class IndividualIn(BaseModel):
 def individual_dict(row) -> dict:
     d = dict(row)
     if d.get("cover_path"):
-        d["cover_url"] = media.media_url(d.pop("cover_path"))
+        d["cover_url"] = media.thumb_url(media.media_url(d.pop("cover_path")))
     return d
 
 
@@ -142,7 +158,7 @@ def get_individual(iid: int):
     samples = db.query("SELECT id, kind, crop_path, origin, created_at FROM samples WHERE individual_id = ? "
                        "ORDER BY id DESC", (iid,))
     return {**dict(rows[0]), "samples": [
-        {"id": s["id"], "kind": s["kind"], "origin": s["origin"], "url": media.media_url(s["crop_path"])}
+        {"id": s["id"], "kind": s["kind"], "origin": s["origin"], "url": media.thumb_url(media.media_url(s["crop_path"]))}
         for s in samples]}
 
 
@@ -213,10 +229,20 @@ async def identify(file: UploadFile = File(...)):
     service = get_service()
     try:
         if media.is_video(file.filename, file.content_type):
-            return await run_in_threadpool(service.identify_video, data, file.filename)
-        return await run_in_threadpool(service.identify_image, data, file.filename)
+            result = await run_in_threadpool(service.identify_video, data, file.filename)
+        else:
+            result = await run_in_threadpool(service.identify_image, data, file.filename)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
+    return web_result(result)
+
+
+def web_result(result: dict) -> dict:
+    """Pro zobrazení stačí náhledy (rámečky se kreslí v souřadnicích originálu, takže sedí dál)."""
+    result = {**result, "media_url": media.thumb_url(result.get("media_url"), "m")}
+    result["animals"] = [{**a, "crops": [{**c, "url": media.thumb_url(c["url"])} for c in a["crops"]]}
+                         for a in result.get("animals", [])]
+    return result
 
 
 class ConfirmIn(BaseModel):
@@ -247,19 +273,19 @@ def history(limit: int = 30):
         cands = (res.get("video") or {}).get("candidates") or \
             (res["animals"][0]["candidates"] if res.get("animals") else [])
         out.append({"id": r["id"], "media_type": r["media_type"], "created_at": r["created_at"],
-                    "media_url": res.get("media_url"), "top": cands[0] if cands else None,
+                    "media_url": media.thumb_url(res.get("media_url")), "top": cands[0] if cands else None,
                     "confirmed_name": r["confirmed_name"]})
     return out
 
 
 # ---------- stav a vyhodnocení ----------
 @app.get("/api/status")
-def status(request: Request):
+async def status(request: Request):
     pin_ok = not settings.pin or request.headers.get("x-pin") == settings.pin
     info = {"pin_required": bool(settings.pin), "pin_ok": pin_ok}
-    if not pin_ok or "service" not in state:
+    if not pin_ok:
         return info
-    s = state["service"]
+    s = await run_in_threadpool(get_service)  # po probuzení počká, než se načtou modely
     return {**info,
             "device": device_description(),
             "embedder": s.embedder.model_name, "finetuned": s.embedder.finetuned,
@@ -305,6 +331,14 @@ async def reload_model():
 
 
 # ---------- soubory ----------
+@app.get("/media/_t/{size}/{rel:path}")
+def thumbnail(size: str, rel: str):
+    path = media.thumb_path(size, rel)
+    if path is None:
+        raise HTTPException(404, "Náhled nenalezen.")
+    return FileResponse(path, media_type="image/jpeg")
+
+
 app.mount("/media", StaticFiles(directory=str(settings.media_dir), check_dir=False), name="media")
 
 

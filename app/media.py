@@ -20,6 +20,42 @@ def media_url(rel: str) -> str:
     return f"/media/{rel}"
 
 
+# Náhledy pro web. Originály zůstávají, jak jsou (z nich se počítají otisky), web stahuje jen
+# zmenšené kopie, které se vytvoří při prvním zobrazení a uloží do media/_thumbs.
+THUMB_SIZES = {"s": 384, "m": 1280}
+THUMB_PREFIX = "/media/_t/"
+
+
+def thumb_url(url: str | None, size: str = "s") -> str | None:
+    """Z adresy /media/... udělá adresu náhledu. Videa a cizí adresy nechá být."""
+    if not url or not url.startswith("/media/") or Path(url).suffix.lower() in VIDEO_EXT:
+        return url
+    rel = url[len("/media/"):]
+    if url.startswith(THUMB_PREFIX):
+        rel = rel.split("/", 2)[2]  # už je to náhled: _t/<velikost>/<cesta>
+    return f"{THUMB_PREFIX}{size}/{rel}"
+
+
+def thumb_path(size: str, rel: str) -> Path | None:
+    """Cesta k náhledu (vytvoří ho, když chybí). None = neznámá velikost nebo soubor."""
+    if size not in THUMB_SIZES:
+        return None
+    root = settings.media_dir.resolve()
+    src = (root / rel).resolve()
+    if root not in src.parents or not src.is_file() or src.suffix.lower() in VIDEO_EXT:
+        return None
+    dst = root / "_thumbs" / size / Path(rel).with_suffix(".jpg")
+    if not dst.exists():
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        with Image.open(src) as im:
+            im = im.convert("RGB")
+            im.thumbnail((THUMB_SIZES[size], THUMB_SIZES[size]))
+            tmp = dst.with_name(f"{dst.stem}.{uuid.uuid4().hex}.tmp")
+            im.save(tmp, "JPEG", quality=78, optimize=True, progressive=True)
+        tmp.replace(dst)
+    return dst
+
+
 def is_video(filename: str, content_type: str | None = None) -> bool:
     if content_type and content_type.startswith("video/"):
         return True
