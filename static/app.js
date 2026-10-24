@@ -85,6 +85,7 @@ async function individuals(force = false) {
 
 const ICONS = {
   camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
   check: '<path d="m5 12 5 5 9-10"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
@@ -149,13 +150,15 @@ async function identifyView() {
     <div class="card stack">
       <h2>Kdo je to?</h2>
       <p class="muted">Vyfoťte nebo natočte hulmana. Video z více úhlů dává spolehlivější výsledek než jedna fotka.</p>
-      <label class="btn primary big" for="cam">${icon("camera")} Vyfotit nebo natočit</label>
-      <input class="hidden-input" id="cam" type="file" accept="image/*,video/*" capture="environment">
+      <label class="btn primary big" for="cam">${icon("camera")} Vyfotit</label>
+      <input class="hidden-input" id="cam" type="file" accept="image/*" capture="environment">
+      <label class="btn big" for="camVideo">${icon("video")} Natočit video</label>
+      <input class="hidden-input" id="camVideo" type="file" accept="video/*" capture="environment">
       <label class="btn big" for="pick">${icon("image")} Vybrat z galerie</label>
       <input class="hidden-input" id="pick" type="file" accept="image/*,video/*">
     </div>
     <div id="result">${lastResult ? "" : ""}</div>`;
-  for (const id of ["cam", "pick"]) {
+  for (const id of ["cam", "camVideo", "pick"]) {
     document.getElementById(id).onchange = (e) => e.target.files[0] && runIdentify(e.target.files[0]);
   }
   if (lastResult) renderResult(lastResult);
@@ -352,8 +355,10 @@ async function individualView(id) {
       <p class="muted small">Ideálně stovky záběrů: obličej zepředu, oba boky, záda, různé světlo. Z videa se bere jeden snímek za sekundu. Na záběru má být jen tento hulman (jinak se vezme největší).</p>
       <label class="btn primary" for="enroll">${icon("upload")} Vybrat soubory</label>
       <input class="hidden-input" id="enroll" type="file" accept="image/*,video/*" multiple>
-      <label class="btn" for="enrollCam">${icon("camera")} Natočit teď</label>
-      <input class="hidden-input" id="enrollCam" type="file" accept="image/*,video/*" capture="environment">
+      <label class="btn" for="enrollCam">${icon("camera")} Vyfotit teď</label>
+      <input class="hidden-input" id="enrollCam" type="file" accept="image/*" capture="environment">
+      <label class="btn" for="enrollVideo">${icon("video")} Natočit teď</label>
+      <input class="hidden-input" id="enrollVideo" type="file" accept="video/*" capture="environment">
       <div id="enrollStatus"></div>
     </div>
     <div class="card">
@@ -366,7 +371,7 @@ async function individualView(id) {
     <div id="editForm">${individualForm(i, "Upravit údaje")}</div>
     <button class="btn danger" id="del">Smazat hulmana i s fotkami</button>`;
   bindIndividualForm(id);
-  for (const inputId of ["enroll", "enrollCam"]) {
+  for (const inputId of ["enroll", "enrollCam", "enrollVideo"]) {
     document.getElementById(inputId).onchange = (e) => enrollFiles(id, [...e.target.files]);
   }
   view.querySelectorAll("[data-sample]").forEach((b) => b.onclick = async () => {
