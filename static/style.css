@@ -1,55 +1,58 @@
-/* Barvy hulmana posvátného: béžovo-šedá srst, černý obličej, jantarové oči. Na pozadí listy monstery. */
+/* Teplé jantarové barvy podle návrhu ze Stitch (design/stitch/), písmo IBM Plex Sans + Mono. */
 :root {
-  --bg: #ddd5c6;
-  --surface: #f2eee6;
-  --surface-2: #e3dccf;
-  --text: #1f1d1a;
-  --muted: #6b6457;
-  --border: #c9c0ae;
-  --primary: #1f1d1a;
-  --primary-text: #f2eee6;
-  --leaves: url("monstera-light.svg");
-  --accent: #b7832f;
+  --bg: #fff8f4;
+  --surface: #fdf2e7;
+  --surface-2: #f1e6dc;
+  --text: #201b15;
+  --muted: #504537;
+  --border: #e6d9cb;
+  --primary: #7e5300;
+  --primary-text: #ffffff;
+  --leaves: none;
+  --accent: #9b6b17;
   --ok: #3f6b4a;
   --warn: #a8701c;
-  --danger: #a33a2c;
-  --radius: 8px;
+  --danger: #ba1a1a;
+  --shadow: 0 1px 2px rgba(32, 27, 21, .06), 0 1px 8px rgba(32, 27, 21, .04);
+  --radius: 12px;
   color-scheme: light;
 }
 
 /* tmavý režim: podle systému, dokud si uživatel nevybere tlačítkem v záhlaví */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #191714;
-    --surface: #221f1b;
-    --surface-2: #2d2924;
-    --text: #ebe5d9;
-    --muted: #a49b8a;
-    --border: #3a352e;
-    --primary: #ebe5d9;
-    --primary-text: #191714;
-    --leaves: url("monstera-dark.svg");
-    --accent: #d6a24c;
+    --bg: #17130e;
+    --surface: #221c16;
+    --surface-2: #2e271f;
+    --text: #ece1d6;
+    --muted: #cdc6b7;
+    --border: #3a3229;
+    --primary: #f8bc62;
+    --primary-text: #291800;
+    --leaves: none;
+    --accent: #f8bc62;
     --ok: #7fae88;
-    --warn: #d6a24c;
-    --danger: #e07a6a;
+    --warn: #f8bc62;
+    --danger: #ffb4ab;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #191714;
-  --surface: #221f1b;
-  --surface-2: #2d2924;
-  --text: #ebe5d9;
-  --muted: #a49b8a;
-  --border: #3a352e;
-  --primary: #ebe5d9;
-  --primary-text: #191714;
-  --leaves: url("monstera-dark.svg");
-  --accent: #d6a24c;
+  --bg: #17130e;
+  --surface: #221c16;
+  --surface-2: #2e271f;
+  --text: #ece1d6;
+  --muted: #cdc6b7;
+  --border: #3a3229;
+  --primary: #f8bc62;
+  --primary-text: #291800;
+  --leaves: none;
+  --accent: #f8bc62;
   --ok: #7fae88;
-  --warn: #d6a24c;
-  --danger: #e07a6a;
+  --warn: #f8bc62;
+  --danger: #ffb4ab;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3);
   color-scheme: dark;
 }
 
@@ -68,24 +71,27 @@ body {
 a { color: inherit; }
 .icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75;
   stroke-linecap: round; stroke-linejoin: round; }
+.icon.fill { fill: currentColor; stroke: none; }
 
 /* záhlaví */
 .topbar {
   position: sticky; top: 0; z-index: 5;
   display: flex; align-items: center; gap: 12px;
   padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, .04);
 }
-.topbar .logo { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.topbar .logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
 .topbar h1 { font-size: 18px; margin: 0; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
 .topbar .sub { display: block; font-size: 13px; color: var(--muted); }
 .theme-toggle {
   margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; padding: 0; border-radius: 50%;
-  border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+  width: 44px; height: 44px; padding: 0; border-radius: 50%;
+  border: 0; background: none; color: var(--muted); cursor: pointer;
 }
-.theme-toggle:hover { background: var(--surface-2); }
+.theme-toggle .icon { width: 22px; height: 22px; }
+.theme-toggle:hover { color: var(--text); background: var(--surface-2); }
 .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .theme-toggle .moon { display: none; }
 :root[data-theme="dark"] .theme-toggle .sun { display: none; }
@@ -113,31 +119,32 @@ code { font: 14px "IBM Plex Mono", ui-monospace, monospace; }
 /* spodní navigace, na širokých obrazovkách nahoře pod záhlavím */
 .tabbar {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 5;
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom);
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  box-shadow: 0 -1px 8px rgba(0, 0, 0, .04);
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
 }
 .tabbar a {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 9px 0 8px; font-size: 12px; color: var(--muted); text-decoration: none;
+  padding: 8px 0 7px; border-radius: var(--radius);
+  font: 12px "IBM Plex Mono", ui-monospace, monospace; color: var(--muted); text-decoration: none;
 }
-.tabbar a.active { color: var(--text); font-weight: 600; }
-.tabbar a.active .icon { stroke: var(--accent); }
+.tabbar a:hover { color: var(--text); }
+.tabbar a.active { color: var(--primary); font-weight: 500;
+  background: color-mix(in srgb, var(--primary) 10%, transparent); }
 
 @media (min-width: 760px) {
   body { padding-bottom: 0; }
   .tabbar {
-    position: sticky; top: 61px; bottom: auto; border-top: 0; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: center; gap: 4px; background: var(--bg); padding: 0;
+    position: sticky; top: 61px; bottom: auto; box-shadow: none;
+    display: flex; justify-content: center; gap: 4px; padding: 8px 0;
   }
-  .tabbar a { flex-direction: row; gap: 8px; padding: 12px 16px; font-size: 14px;
-    border-bottom: 2px solid transparent; margin-bottom: -1px; }
-  .tabbar a.active { border-bottom-color: var(--accent); }
+  .tabbar a { flex-direction: row; gap: 8px; padding: 8px 16px; font-size: 14px; }
 }
 
 .card {
-  background: var(--surface); border: 1px solid var(--border);
+  background: var(--surface); border: 0; box-shadow: var(--shadow);
   border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
 }
 
@@ -201,17 +208,6 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0 4px
 .cand.first .bar > i { background: var(--accent); }
 
 /* galerie */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-.tile {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  overflow: hidden; color: inherit; text-decoration: none;
-}
-.tile:hover { border-color: var(--muted); }
-.tile .cover { aspect-ratio: 1; background: var(--surface-2) center/cover no-repeat;
-  display: flex; align-items: center; justify-content: center; color: var(--muted); }
-.tile .cover .icon { width: 32px; height: 32px; }
-.tile .meta { padding: 8px 10px 10px; }
-.tile .meta b { display: block; font-weight: 600; }
 .badge { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 99px;
   background: var(--surface-2); color: var(--muted); }
 .badge.warn { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn); }
@@ -279,3 +275,26 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .page-head h2 { margin: 0; }
 .page-head h2 .muted { font-weight: 400; }
+.page-head .sub { display: block; font-size: 14px; color: var(--muted); }
+.page-head .btn { flex: none; }
+
+/* seznam hulmanů: karta s fotkou, údaji a počtem vzorků */
+.roster { display: flex; flex-direction: column; gap: 12px; }
+.roster-item {
+  display: flex; align-items: center; gap: 16px; padding: 16px;
+  background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
+  color: inherit; text-decoration: none;
+}
+.roster-item:hover { background: var(--surface-2); }
+.roster-item .avatar {
+  width: 64px; height: 64px; flex: none; border-radius: var(--radius);
+  background: var(--surface-2) center/cover no-repeat;
+  display: flex; align-items: center; justify-content: center; color: var(--muted);
+}
+.roster-item .avatar .icon { width: 32px; height: 32px; }
+.roster-item .info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.roster-item .info b { font-weight: 500; font-size: 16px; overflow-wrap: anywhere; }
+.roster-item .info .muted { font-size: 13px; }
+.roster-item .count { margin-top: 4px; font: 12px "IBM Plex Mono", ui-monospace, monospace; color: var(--muted); }
+.roster-item .count.ready { color: var(--primary); }
+.roster-item > .icon { color: var(--muted); }
