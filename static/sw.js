@@ -1,5 +1,5 @@
 // Jednoduchý service worker: aplikace jde přidat na plochu; data se vždy berou ze serveru.
-const SHELL = "hulmanek-v10";
+const SHELL = "hulmanek-v11";
 self.addEventListener("install", (e) => e.waitUntil(caches.open(SHELL).then((c) => c.addAll(["/", "/app.js", "/style.css", "/logo.png"]))));
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
