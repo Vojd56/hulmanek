@@ -113,7 +113,6 @@ const ICONS = {
   back: '<path d="M15 6l-6 6 6 6"/>',
   upload: '<path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v5h16v-5"/>',
   lock: '<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
-  portrait: '<circle cx="12" cy="9" r="4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
   paw: '<circle cx="6" cy="10" r="2.2"/><circle cx="9.5" cy="5.8" r="2.2"/><circle cx="14.5" cy="5.8" r="2.2"/><circle cx="18" cy="10" r="2.2"/><path d="M12 11c-2.6 0-6 4.2-6 7.1C6 19.9 7.4 21 9 21c1.2 0 2-.6 3-.6s1.8.6 3 .6c1.6 0 3-1.1 3-2.9 0-2.9-3.4-7.1-6-7.1z"/>',
 };
