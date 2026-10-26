@@ -114,8 +114,14 @@ const ICONS = {
   upload: '<path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v5h16v-5"/>',
   lock: '<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   portrait: '<circle cx="12" cy="9" r="4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/>',
+  chevron: '<path d="m9 6 6 6-6 6"/>',
+  paw: '<circle cx="6" cy="10" r="2.2"/><circle cx="9.5" cy="5.8" r="2.2"/><circle cx="14.5" cy="5.8" r="2.2"/><circle cx="18" cy="10" r="2.2"/><path d="M12 11c-2.6 0-6 4.2-6 7.1C6 19.9 7.4 21 9 21c1.2 0 2-.6 3-.6s1.8.6 3 .6c1.6 0 3-1.1 3-2.9 0-2.9-3.4-7.1-6-7.1z"/>',
 };
-const icon = (name) => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+const FILLED = new Set(["paw"]);
+const icon = (name) => `<svg class="icon${FILLED.has(name) ? " fill" : ""}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+
+/** České tvary podle počtu: plural(2, "rok", "roky", "let") → "2 roky". */
+const plural = (n, one, few, many) => `${n} ${n === 1 ? one : n >= 2 && n <= 4 ? few : many}`;
 
 const KIND_LABEL = { face: "obličej", body: "tělo" };
 
@@ -313,19 +319,30 @@ const MIN_SAMPLES = 20;
 
 async function individualsView() {
   const list = await individuals(true);
+  const year = new Date().getFullYear();
+  const details = (i) => [
+    i.sex === "M" ? "Samec" : i.sex === "F" ? "Samice" : "",
+    i.birth_year && i.birth_year <= year ? `Věk: ${plural(year - i.birth_year, "rok", "roky", "let")}` : "",
+  ].filter(Boolean).join(" • ");
   view.innerHTML = `
     <div class="page-head">
-      <h2>Hulmani <span class="muted">${list.length}</span></h2>
+      <div>
+        <h2>Výběh hulmanů <span class="muted">${list.length}</span></h2>
+        <span class="sub">Správa jedinců a jejich referenčních fotek</span>
+      </div>
       <button class="btn primary" id="add">${icon("plus")} Přidat</button>
     </div>
     <div id="addForm"></div>
     ${list.length ? "" : `<div class="card"><p>Zatím tu nikdo není. Přidejte prvního hulmana a nahrajte k němu fotky nebo krátká videa z různých stran.</p></div>`}
-    <div class="grid">${list.map((i) => `
-      <a class="tile" href="#/hulman/${i.id}">
-        <div class="cover" style="${i.cover_url ? `background-image:url('${i.cover_url}')` : ""}">${i.cover_url ? "" : icon("portrait")}</div>
-        <div class="meta"><b>${esc(i.name)}</b>
-          <span class="badge ${i.samples < MIN_SAMPLES ? "warn" : "ok"}">${i.face_samples || 0} obl. · ${i.body_samples || 0} těl</span>
+    <div class="roster">${list.map((i) => `
+      <a class="roster-item" href="#/hulman/${i.id}">
+        <div class="avatar" style="${i.cover_url ? `background-image:url('${i.cover_url}')` : ""}">${i.cover_url ? "" : icon("paw")}</div>
+        <div class="info">
+          <b>${esc(i.name)}</b>
+          ${details(i) ? `<span class="muted">${details(i)}</span>` : ""}
+          <span class="count ${i.samples >= MIN_SAMPLES ? "ready" : ""}" title="${i.face_samples || 0} obličejů · ${i.body_samples || 0} těl">${plural(i.samples, "vzorek", "vzorky", "vzorků")} v AI</span>
         </div>
+        ${icon("chevron")}
       </a>`).join("")}</div>`;
   document.getElementById("add").onclick = () => {
     document.getElementById("addForm").innerHTML = individualForm({}, "Přidat hulmana");
@@ -554,7 +571,7 @@ async function statusView() {
 const darkQuery = matchMedia("(prefers-color-scheme: dark)");
 const isDark = () => (document.documentElement.dataset.theme || (darkQuery.matches ? "dark" : "light")) === "dark";
 function syncTheme() {
-  document.querySelector('meta[name="theme-color"]').content = isDark() ? "#191714" : "#ddd5c6";
+  document.querySelector('meta[name="theme-color"]').content = isDark() ? "#17130e" : "#fff8f4";
   const btn = document.getElementById("theme-toggle");
   btn.setAttribute("aria-label", isDark() ? "Přepnout na světlý režim" : "Přepnout na tmavý režim");
 }
