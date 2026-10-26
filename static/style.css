@@ -186,9 +186,10 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0 4px
 .photo { position: relative; border-radius: var(--radius); overflow: hidden; background: #000; }
 .photo img { display: block; width: 100%; height: auto; }
 .photo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.photo rect { fill: none; stroke-width: 2.5; vector-effect: non-scaling-stroke; }
-.photo rect.body { stroke: #f3f1ec; }
-.photo rect.face { stroke: #d6a24c; stroke-dasharray: 6 4; }
+/* čárkované rámečky: tělo žluté, obličej růžový */
+.photo rect { fill: none; stroke-width: 3; stroke-dasharray: 8 5; vector-effect: non-scaling-stroke; }
+.photo rect.body { stroke: #ffd166; }
+.photo rect.face { stroke: #ef476f; stroke-dasharray: 6 4; }
 .photo text { fill: #fff; font-weight: 600; paint-order: stroke; stroke: #000; stroke-width: 3px; }
 
 .verdict { font-size: 22px; font-weight: 600; letter-spacing: -.01em; margin: 2px 0 6px; }
