@@ -30,7 +30,9 @@ class Settings:
     detector_enabled: bool = field(default_factory=lambda: _env("DETECTOR", True, bool))
     detector_weights: str = field(default_factory=lambda: _env("DETECTOR_WEIGHTS", "auto"))
     detector_conf: float = field(default_factory=lambda: _env("DETECTOR_CONF", 0.15, float))
-    body_classes: tuple = ("langur", "monkey", "primate")
+    # Malý model (na procesoru) hulmany často nepozná jako „langur/monkey“ a dá jim skóre pod prahem,
+    # ale s jistotou je označí jako „bear“ nebo „cat“. Obecné zvířecí třídy proto bereme také jako tělo.
+    body_classes: tuple = ("langur", "monkey", "primate", "animal", "bear", "cat", "dog")
     face_classes: tuple = ("monkey face", "langur face")
 
     # Rozpoznávání
